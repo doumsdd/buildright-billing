@@ -10,6 +10,11 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { HardHat } from "lucide-react";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { StoreProvider } from "@/lib/store";
+import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -78,11 +83,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "guestBTP — Construction Billing" },
+      { name: "description", content: "Invoicing for construction companies." },
+      { name: "author", content: "guestBTP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -92,6 +95,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
   }),
@@ -121,7 +127,34 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <StoreProvider>
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full">
+            <AppSidebar />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <header className="sticky top-0 z-20 bg-secondary text-secondary-foreground">
+                <div className="flex h-14 items-center gap-3 px-3">
+                  <SidebarTrigger className="text-secondary-foreground hover:bg-sidebar-accent hover:text-secondary-foreground" />
+                  <Link to="/" className="flex items-center gap-2">
+                    <span className="grid h-8 w-8 place-items-center rounded-sm bg-primary text-primary-foreground"><HardHat className="h-5 w-5" /></span>
+                    <span className="font-display text-xl font-bold tracking-wide">guest<span className="text-primary">BTP</span></span>
+                  </Link>
+                  <div className="ml-auto flex items-center gap-2">
+                    <div className="hidden text-right text-xs leading-tight sm:block">
+                      <div className="font-semibold">Mamadou D.</div>
+                      <div className="opacity-70">Chef de chantier</div>
+                    </div>
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-sidebar-accent font-display font-bold">MD</span>
+                  </div>
+                </div>
+                <div className="hazard-stripe h-1.5" />
+              </header>
+              <main className="flex-1 p-4 md:p-6 lg:p-8"><Outlet /></main>
+            </div>
+          </div>
+        </SidebarProvider>
+        <Toaster richColors position="top-right" />
+      </StoreProvider>
     </QueryClientProvider>
   );
 }
