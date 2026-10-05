@@ -33,7 +33,7 @@ export interface Invoice {
   status: InvoiceStatus;
   lines: InvoiceLine[];
   createdAt: string;
-  paidAt?: string;
+  paidAt?: string | undefined;
 }
 
 export type ClientInput = Omit<Client, "id" | "createdAt">;

@@ -25,7 +25,7 @@ describe("status rules", () => {
   it("reducer rejects invalid transition and edits on non-drafts", () => {
     const s = { clients: mockClients, invoices: mockInvoices };
     expect(() => reducer(s, { type: "transition", id: "i1", to: "sent" })).toThrow(BusinessRuleError);
-    expect(() => reducer(s, { type: "updateDraft", id: "i1", data: mockInvoices[0] })).toThrow(BusinessRuleError);
+    expect(() => reducer(s, { type: "updateDraft", id: "i1", data: mockInvoices[0]! })).toThrow(BusinessRuleError);
   });
   it("sent past due is overdue", () => {
     expect(effectiveStatus({ status: "sent", dueDate: "2020-01-01" })).toBe("overdue");
