@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Banknote, Clock, AlertTriangle, FileText, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +27,8 @@ const statusColor: Record<InvoiceStatus, string> = {
 
 function Dashboard() {
   const { invoices, clients } = useStore();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const data = useMemo(() => {
     const rows = invoices.map((i) => ({ ...i, eff: effectiveStatus(i), ttc: computeTotals(i.lines).totalTTC }));
     const sum = (f: (r: (typeof rows)[number]) => boolean) => rows.filter(f).reduce((a, r) => a + r.ttc, 0);
@@ -79,7 +81,7 @@ function Dashboard() {
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle className="font-display uppercase">Monthly revenue (TTC)</CardTitle></CardHeader>
           <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+            {mounted && <ResponsiveContainer width="100%" height={256}>
               <BarChart data={data.months}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="name" stroke="var(--muted-foreground)" fontSize={12} />
@@ -88,20 +90,20 @@ function Dashboard() {
                 <Bar dataKey="billed" name="Billed" fill="var(--secondary)" radius={[2, 2, 0, 0]} />
                 <Bar dataKey="paid" name="Collected" fill="var(--primary)" radius={[2, 2, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="font-display uppercase">Invoices by status</CardTitle></CardHeader>
           <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="80%">
+            {mounted && <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={data.byStatus} dataKey="value" nameKey="name" innerRadius={50} outerRadius={85} paddingAngle={2}>
                   {data.byStatus.map((s) => <Cell key={s.status} fill={statusColor[s.status]} />)}
                 </Pie>
                 <Tooltip />
               </PieChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer>}
             <div className="flex flex-wrap justify-center gap-3 text-xs">
               {data.byStatus.map((s) => (
                 <span key={s.status} className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: statusColor[s.status] }} />{s.name} ({s.value})</span>
