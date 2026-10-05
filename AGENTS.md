@@ -15,3 +15,4 @@
 - The invoice-status and total calculations live in `src/lib/invoice-calc.ts` as pure functions, so tests can cover them.
 - The store has no delete action for invoices. The billing rules forbid deleting an invoice.
 - Recharts charts render only after the page has loaded in the browser. Otherwise they measure zero width during server rendering and come out blank.
+- Sign-in is a browser-only demo gate (`src/lib/auth.tsx`, checked in `AppFrame` in `__root.tsx`) because the app runs on local sample data with no backend. Real accounts would need Lovable Cloud.

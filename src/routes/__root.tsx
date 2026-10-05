@@ -10,7 +10,9 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
-import { HardHat } from "lucide-react";
+import { HardHat, LogOut } from "lucide-react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { StoreProvider } from "@/lib/store";
@@ -128,33 +130,51 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <StoreProvider>
-        <SidebarProvider>
-          <div className="flex min-h-screen w-full">
-            <AppSidebar />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <header className="sticky top-0 z-20 bg-secondary text-secondary-foreground">
-                <div className="flex h-14 items-center gap-3 px-3">
-                  <SidebarTrigger className="text-secondary-foreground hover:bg-sidebar-accent hover:text-secondary-foreground" />
-                  <Link to="/" className="flex items-center gap-2">
-                    <span className="grid h-8 w-8 place-items-center rounded-sm bg-primary text-primary-foreground"><HardHat className="h-5 w-5" /></span>
-                    <span className="font-display text-xl font-bold tracking-wide">guest<span className="text-primary">BTP</span></span>
-                  </Link>
-                  <div className="ml-auto flex items-center gap-2">
-                    <div className="hidden text-right text-xs leading-tight sm:block">
-                      <div className="font-semibold">Mamadou D.</div>
-                      <div className="opacity-70">Chef de chantier</div>
-                    </div>
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-sidebar-accent font-display font-bold">MD</span>
-                  </div>
-                </div>
-                <div className="hazard-stripe h-1.5" />
-              </header>
-              <main className="flex-1 p-4 md:p-6 lg:p-8"><Outlet /></main>
-            </div>
-          </div>
-        </SidebarProvider>
+        <AuthProvider><AppFrame /></AuthProvider>
         <Toaster richColors position="top-right" />
       </StoreProvider>
     </QueryClientProvider>
+  );
+}
+
+function AppFrame() {
+  const { session, ready, logout } = useAuth();
+  const navigate = useNavigate();
+  const pathname = useRouterState({ select: (r) => r.location.pathname });
+  const onLogin = pathname === "/login";
+  useEffect(() => {
+    if (ready && !session && !onLogin) navigate({ to: "/login", replace: true });
+  }, [ready, session, onLogin, navigate]);
+  const signOut = () => { logout(); navigate({ to: "/login", replace: true }); };
+
+  if (onLogin) return <Outlet />;
+  if (!ready || !session) return <div className="min-h-screen bg-background" />;
+  return (
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="sticky top-0 z-20 bg-secondary text-secondary-foreground">
+        <div className="flex h-14 items-center gap-3 px-3">
+          <SidebarTrigger className="text-secondary-foreground hover:bg-sidebar-accent hover:text-secondary-foreground" />
+          <Link to="/" className="flex items-center gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-sm bg-primary text-primary-foreground"><HardHat className="h-5 w-5" /></span>
+            <span className="font-display text-xl font-bold tracking-wide">guest<span className="text-primary">BTP</span></span>
+          </Link>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="hidden text-right text-xs leading-tight sm:block">
+              <div className="font-semibold">{session.name}</div>
+              <div className="opacity-70">{session.role}</div>
+            </div>
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-sidebar-accent font-display font-bold">{session.initials}</span>
+            <button onClick={signOut} aria-label="Sign out" title="Sign out" className="grid h-9 w-9 place-items-center rounded-sm hover:bg-sidebar-accent"><LogOut className="h-4 w-4" /></button>
+          </div>
+        </div>
+        <div className="hazard-stripe h-1.5" />
+          </header>
+          <main className="flex-1 p-4 md:p-6 lg:p-8"><Outlet /></main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }
